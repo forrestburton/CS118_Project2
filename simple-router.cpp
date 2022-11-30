@@ -35,6 +35,7 @@ namespace simple_router {
 void
 SimpleRouter::processPacket(const Buffer& packet, const std::string& inIface)
 {
+  std::cerr << "Hello World" << std::endl;
   print_hdrs(packet);
   std::cerr << "Got packet of size " << packet.size() << " on interface " << inIface << std::endl;
 
