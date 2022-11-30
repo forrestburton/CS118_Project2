@@ -32,25 +32,38 @@ namespace simple_router {
 * interface \p inIface are passed in as parameters. The packet is
 * complete with ethernet headers.
 */
+std::string BROADCAST = "FF:FF:FF:FF:FF:FF";
+std::string LOWER_BROADCAST = "ff:ff:ff:ff:ff:ff";
+
 void
-SimpleRouter::processPacket(const Buffer& packet, const std::string& inIface)
+SimpleRouter::processPacket(const Buffer& packet, const std::string& inIface)   
 {
-  std::cerr << "Hello World!" << std::endl;
   print_hdrs(packet);
-  std::cerr << "Hello World! Got packet of size " << packet.size() << " on interface " << inIface << std::endl;
+  std::cerr << "Got packet of size " << packet.size() << " on interface " << inIface << std::endl;
 
   const Interface* iface = findIfaceByName(inIface);
   if (iface == nullptr) {
     std::cerr << "Received packet, but interface is unknown, ignoring" << std::endl;
     return;
   }
+  
+  // macToString: Get formatted Ethernet address, e.g. 00:11:22:33:44:55
+  std::string iface_mac_address = macToString(iface->addr);
+  std::string destination_mac_address = macToString(packet);
+
+  //ignoring condition: if packet not destined for the router
+  if ((destination_mac_address != iface_mac_address) && (destination_mac_address != BROADCAST) && (destination_mac_address != LOWER_BROADCAST)) {
+    std::cerr << "Ethernet frames must be destined for the MAC address of the interface or a braodcast address" << std::endl;
+    return;
+  }
 
   std::cerr << getRoutingTable() << std::endl;
 
-  // FILL THIS IN
 
   // Get MAC address information
-  // Determine if packet is ARP or Iv4
+  // Ignore frames not destined for router
+  // Ignore frames not ARP or Ipv4
+  // Determine if packet is ARP or IPv4
 
   // IF ARP
 
