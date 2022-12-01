@@ -34,7 +34,7 @@ namespace simple_router {
 */
 std::string BROADCAST = "FF:FF:FF:FF:FF:FF";
 std::string LOWER_BROADCAST = "ff:ff:ff:ff:ff:ff";
-static const uint8_t BroadcastEtherAddr[ETHER_ADDR_LEN] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+static const uint8_t BroadcastEtherAddr[ETHER_ADDR_LEN] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};  // REMOVE
 
 void
 SimpleRouter::processPacket(const Buffer& packet, const std::string& inIface)   

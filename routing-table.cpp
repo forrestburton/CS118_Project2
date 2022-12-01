@@ -31,10 +31,24 @@ namespace simple_router {
 RoutingTableEntry
 RoutingTable::lookup(uint32_t ip) const
 {
-
   // FILL THIS IN
+  uint32_t match = -1;
+  std::list<RoutingTableEntry>::const_iterator it = m_entries.begin();
+  RoutingTableEntry* longest_entry = nullptr;
+  while (it != m_entries.end()) {
+    if ((ip & it->mask) == (it->dest & it->mask)) {
+      if (it->mask > match) {
+        match = it->mask
+        longest_entry = (RoutingTableEntry*) &*it;
+      }
+    }
+    it++;
+  }
 
-  throw std::runtime_error("Routing entry not found");
+  if (longest_entry == nullptr) {
+    throw std::runtime_error("Routing entry not found");
+  }
+  return *longest_entry;
 }
 //////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////
