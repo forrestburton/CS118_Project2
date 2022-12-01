@@ -40,6 +40,7 @@ RoutingTable::lookup(uint32_t ip) const
     if ((ip & it->mask) == (it->dest & it->mask)) {
       std::cerr << match << std::endl;
       if (it->mask > match) {
+        std::cerr << "Longest Prefix Updated!" << std::endl;
         match = it->mask;
         longest_entry = (RoutingTableEntry*) &*it;
       }
