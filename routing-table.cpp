@@ -38,7 +38,7 @@ RoutingTable::lookup(uint32_t ip) const
   while (it != m_entries.end()) {
     if ((ip & it->mask) == (it->dest & it->mask)) {
       if (it->mask > match) {
-        match = it->mask
+        match = it->mask;
         longest_entry = (RoutingTableEntry*) &*it;
       }
     }
