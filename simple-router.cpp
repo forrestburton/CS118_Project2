@@ -104,7 +104,7 @@ SimpleRouter::processPacket(const Buffer& packet, const std::string& inIface)
       // Add data for ethernet header
       memcpy(eth_hdr_reply->ether_shost, iface->addr.data(), ETHER_ADDR_LEN);
       memcpy(eth_hdr_reply->ether_dhost, &(hdr->arp_sha), ETHER_ADDR_LEN);  // PULL OUT variables?
-      reply_eth_hdr->ether_type = htons(ethertype_arp);
+      eth_hdr_reply->ether_type = htons(ethertype_arp);
       
       // Add data for arp header
       arp_hdr_reply->arp_hrd = htons(ETHER_ADDR_LEN);
@@ -129,14 +129,14 @@ SimpleRouter::processPacket(const Buffer& packet, const std::string& inIface)
       memcpy(ip_mac_mapping.data(), hdr->arp_sha, ETHER_ADDR_LEN);
       
       // Afterwards, the router should send out all corresponding enqueued packets
-      std::shared_ptr<ArpEntry> lookup_ptr = m_arp.lookup(arp_header->arp_sip);  // Lookup entry in ARP cache
+      std::shared_ptr<ArpEntry> lookup_ptr = m_arp.lookup(hdr->arp_sip);  // Lookup entry in ARP cache
       if (lookup_ptr == NULL) {  // not in ARP cache
         uint32_t sender_ip_address = hdr->arp_sip;
         std::shared_ptr<ArpRequest> req = m_arp.insertArpEntry(ip_mac_mapping, sender_ip_address);
         
         // send all correspending packets in the queue 
         if (req != NULL) {
-          for (std::list<PendingPacket>::iterator i = req->packets.begin(); i != arp_req->packets.end(); i++) {
+          for (std::list<PendingPacket>::iterator i = req->packets.begin(); i != req->packets.end(); i++) {
             ethernet_hdr* ethernet_header = (ethernet_hdr*) i->packet.data();
 
             memcpy(ethernet_header->ether_dhost, hdr->arp_sha, ETHER_ADDR_LEN);
@@ -147,7 +147,7 @@ SimpleRouter::processPacket(const Buffer& packet, const std::string& inIface)
           }
         }
         // remove
-        m_arp.removeRequest(req);
+        m_arp.removeArpRequest(req);
       }
     }
   }
@@ -168,7 +168,7 @@ SimpleRouter::processPacket(const Buffer& packet, const std::string& inIface)
 
     uint16_t old_checksum = ip_header->ip_sum; //Old checksum
     ip_header->ip_sum = 0; //reset
-    if (old_check_sum != cksum(ip_header, sizeof(ip_hdr))) {
+    if (old_checksum != cksum(ip_header, sizeof(ip_hdr))) {
       std::cerr << "Dropping Packet: checksum error" << std::endl;
       return;
     }
@@ -196,7 +196,7 @@ SimpleRouter::processPacket(const Buffer& packet, const std::string& inIface)
     //Decrement TTL
     ip_header->ip_ttl--; 
     // if > 0 -> recompute checksum
-    ip_head -> ip_sum = cksum(ip_header, sizeof(ip_hdr)); 
+    ip_header->ip_sum = cksum(ip_header, sizeof(ip_hdr)); 
     
     //Use the longest prefix match algorithm to find a next-hop IP address in the routing table and attempt to forward it there
     std::cerr << "Checking routing table and using longest matching prefix algorithm" << std::endl;
@@ -209,7 +209,7 @@ SimpleRouter::processPacket(const Buffer& packet, const std::string& inIface)
 
     //  Entry not in ARP cache, do ARP request
     if (lookup_ptr == NULL) {
-      m_arp.queueArpRequest(rt_entry.gw, packet, interface_name);  // Adds an ARP request to the ARP request queue
+      m_arp.queueArpRequest(table_entry.gw, packet, interface_name);  // Adds an ARP request to the ARP request queue
       
       // buffer for ARP request
       Buffer arp_buffer(sizeof(ethernet_hdr) + sizeof(arp_hdr));  
@@ -227,7 +227,7 @@ SimpleRouter::processPacket(const Buffer& packet, const std::string& inIface)
       request_header_arp->arp_hrd = htons(arp_hrd_ethernet);
       request_header_arp->arp_op = htons(arp_op_request);
       request_header_arp->arp_sip = ip_interface_next->ip;
-      request_header_arp->arp_tip = rt_entry.gw;
+      request_header_arp->arp_tip = table_entry.gw;
       request_header_arp->arp_hln = ETHER_ADDR_LEN;
       request_header_arp->arp_pln = 4;
       memcpy(request_header_arp->arp_tha, BroadcastEtherAddr, ETHER_ADDR_LEN);   // !!!!!!!!!!!!!!!!!
