@@ -34,6 +34,7 @@ namespace simple_router {
 */
 std::string BROADCAST = "FF:FF:FF:FF:FF:FF";
 std::string LOWER_BROADCAST = "ff:ff:ff:ff:ff:ff";
+static const uint8_t BroadcastEtherAddr[ETHER_ADDR_LEN] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 
 void
 SimpleRouter::processPacket(const Buffer& packet, const std::string& inIface)   
@@ -204,10 +205,10 @@ SimpleRouter::processPacket(const Buffer& packet, const std::string& inIface)
     
     const Interface *ip_interface_next = findIfaceByName(table_entry.ifName);
     std::shared_ptr<ArpEntry> lookup_ptr = m_arp.lookup(table_entry.gw); // Lookup entry in ARP cache
-    
+    std::string interface_name = ip_interface_next->name;
+
     //  Entry not in ARP cache, do ARP request
     if (lookup_ptr == NULL) {
-      std::string interface_name = ip_interface_next->name;
       m_arp.queueArpRequest(rt_entry.gw, packet, interface_name);  // Adds an ARP request to the ARP request queue
       
       // buffer for ARP request
@@ -216,7 +217,7 @@ SimpleRouter::processPacket(const Buffer& packet, const std::string& inIface)
       // Ethernet header info
       ethernet_hdr* request_header_eth = (ethernet_hdr*) (arp_buffer.data());
       request_header_eth->ether_type = htons(ethertype_arp);
-      memcpy(request_header_eth->ether_dhost, BroadcastEtherAddr, ETHER_ADDR_LEN);  // BroadcastEtherAddr
+      memcpy(request_header_eth->ether_dhost, BroadcastEtherAddr, ETHER_ADDR_LEN);  // !!!!!!!!!!!!!!!!!
       memcpy(request_header_eth->ether_shost, ip_interface_next->addr.data(), ETHER_ADDR_LEN);
       
 
@@ -229,7 +230,7 @@ SimpleRouter::processPacket(const Buffer& packet, const std::string& inIface)
       request_header_arp->arp_tip = rt_entry.gw;
       request_header_arp->arp_hln = ETHER_ADDR_LEN;
       request_header_arp->arp_pln = 4;
-      memcpy(request_header_arp->arp_tha, BroadcastEtherAddr, ETHER_ADDR_LEN);
+      memcpy(request_header_arp->arp_tha, BroadcastEtherAddr, ETHER_ADDR_LEN);   // !!!!!!!!!!!!!!!!!
       memcpy(request_header_arp->arp_sha, ip_interface_next->addr.data(), ETHER_ADDR_LEN);
 
       std::cerr << "Forwarding IPv4 Packet" << std::endl;
@@ -240,11 +241,11 @@ SimpleRouter::processPacket(const Buffer& packet, const std::string& inIface)
       // Determine MAC Address, then forward 
       ethernet_hdr* ip_ethernet_header = (ethernet_hdr*) (packet.data());
       memcpy(ip_ethernet_header->ether_shost, ip_ethernet_header->ether_dhost, ETHER_ADDR_LEN);
-      memcpy(ip_ethernet_header->ether_dhost, lookup_ptr>mac.data(), ETHER_ADDR_LEN);
+      memcpy(ip_ethernet_header->ether_dhost, lookup_ptr->mac.data(), ETHER_ADDR_LEN);
       ip_ethernet_header->ether_type = htons(ethertype_ip);
 
       std::cerr << "Forwarding IPv4 Packet" << std::endl;
-      sendPacket(packet, next_hop_iface->name);
+      sendPacket(packet, interface_name);
     }
   }
   // OTHERWISE, ignoring: Packet must be either ARP or IPv4
