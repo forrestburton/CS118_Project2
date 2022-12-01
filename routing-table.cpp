@@ -38,7 +38,8 @@ RoutingTable::lookup(uint32_t ip) const
   RoutingTableEntry* longest_entry = nullptr;
   while (it != m_entries.end()) {
     if ((ip & it->mask) == (it->dest & it->mask)) {
-      std::cerr << match << std::endl;
+      std::cerr << "Printing Match: " << match << std::endl;
+      std::cerr << "Printing IT Match: " << it->mask << std::endl;
       if (it->mask > match) {
         std::cerr << "Longest Prefix Updated!" << std::endl;
         match = it->mask;
@@ -47,7 +48,7 @@ RoutingTable::lookup(uint32_t ip) const
     }
     it++;
   }
-
+  std::cerr << "Final Match: " << match << std::endl;
   if (longest_entry == nullptr) {
     throw std::runtime_error("Routing entry not found");
   }
