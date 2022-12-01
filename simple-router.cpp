@@ -46,7 +46,8 @@ SimpleRouter::processPacket(const Buffer& packet, const std::string& inIface)
     std::cerr << "Received packet, but interface is unknown, ignoring" << std::endl;
     return;
   }
-  
+
+  // Get MAC address information
   // macToString: Get formatted Ethernet address, e.g. 00:11:22:33:44:55
   std::string iface_mac_address = macToString(iface->addr);
   std::string destination_mac_address = macToString(packet);
@@ -59,13 +60,40 @@ SimpleRouter::processPacket(const Buffer& packet, const std::string& inIface)
 
   std::cerr << getRoutingTable() << std::endl;
 
-
-  // Get MAC address information
-  // Ignore frames not destined for router
-  // Ignore frames not ARP or Ipv4
   // Determine if packet is ARP or IPv4
+  uint16_t ethtype = ethertype(packet.data());
 
   // IF ARP
+  if (ethtype == ethertype_arp) {
+    std::cerr << "ARP Packet" << std::endl;
+    
+    const arp_hdr *hdr = reinterpret_cast<const arp_hdr*>(packet.data() + sizeof(ethernet_hdr));
+
+    unsigned short arp_op = hdr->arp_op;
+    // ntohs converts networking byte routing ordering to machine byte ordering (dependent on systems architecture MSB or LSB)
+    // Determine if request or reply
+    uint16_t arp_opcode = ntohs(arp_op);
+
+    // If request (uses unicast for source and broadcast for destination)
+    if (arp_opcode == arp_op_request) {
+      uint32_t arp_tip = hdr->arp_tip;
+      uint32_t iface_ip = iface->ip;
+
+      // Must properly respond to ARP requests for MAC address for the IP address of the corresponding network interface
+      if (arp_tip != iface_ip) {
+        std::cerr << "For ARP requests, ignore if the target IP address of ARP request and receiving interface do not match" << std::endl;
+        return;
+      }
+      
+
+    }
+    else if (arp_opcode == arp_op_reply) {  // If reply (uses unicast for source and unicast for destination)
+
+    }
+  }
+  
+
+  // Ignore frames not ARP or Ipv4
 
   // IF IP
     // if destined for router
