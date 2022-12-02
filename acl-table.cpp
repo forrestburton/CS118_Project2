@@ -61,7 +61,7 @@ ACLTable::lookup(uint32_t srcIp, uint32_t dstIp, uint8_t protocol, uint16_t srcP
   int prior = -1;
 
   // For each incoming packet, check if any of the rules in the ACL apply to the packet 
-  std::list<ACLTableEntry>::const+iterator entry = m_entries.begin();
+  std::list<ACLTableEntry>::const_iterator entry = m_entries.begin();
   ACLTableEntry* highest_priority_entry = nullptr;
   while (entry != m_entries.end()) {
     if (srcIp == entry->src && dstIp == entry->dest && protocol == entry->protocol && srcPort == entry->srcPort && dstPort == entry->destPort) {
@@ -73,7 +73,7 @@ ACLTable::lookup(uint32_t srcIp, uint32_t dstIp, uint8_t protocol, uint16_t srcP
     entry++;
   }
   if (highest_priority_entry == nullptr) {
-    return NULL;
+    return nullptr;
   }
   return *highest_priority_entry;
 }
