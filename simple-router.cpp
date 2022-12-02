@@ -195,7 +195,7 @@ SimpleRouter::processPacket(const Buffer& packet, const std::string& inIface)
     ACLTableEntry entry = m_aclTable.lookup(ip_source, ip_destination, ip_protocal, *source_port, *destination_port);
     
     // entry->action == "" means not found in ACL table
-    if (entry->action == "") {
+    if (entry.action == "") {
       // Perform action described by packet: "Deny" or "Permit"
       if (entry.action == "Deny") {
         // log if packet dropped
