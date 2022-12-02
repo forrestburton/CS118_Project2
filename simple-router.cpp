@@ -179,6 +179,9 @@ SimpleRouter::processPacket(const Buffer& packet, const std::string& inIface)
     ACLTableEntry entry;
     uint16_t* source_port;
     uint16_t* destination_port;
+    uint32_t ip_source = ip_header->ip_src;
+    uint32_t ip_destination = ip_header->ip_dst;
+    uint8_t ip_protocal = ip_header->ip_p;
     
     // If the packet is a TCP or UDP packet, the srcPort number and dstPort number should be extracted from the TCP/UDP header which is right behind the IP header.
     if (ip_header->ip_p == 0x06 || ip_header->ip_p == 0x11) {  // 0x06 = TCP, 0x11 = UDP
@@ -190,10 +193,6 @@ SimpleRouter::processPacket(const Buffer& packet, const std::string& inIface)
     else {
       entry = m_aclTable.lookup(ip_source, ip_destination, ip_protocal, 0, 0);
     }
-
-    uint32_t ip_source = ip_header->ip_src;
-    uint32_t ip_destination = ip_header->ip_dst;
-    uint8_t ip_protocal = ip_header->ip_p;
     
     // entry->action == "" means not found in ACL table
     if (entry.action == "") {
