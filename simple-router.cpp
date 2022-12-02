@@ -32,11 +32,9 @@ namespace simple_router {
 * interface \p inIface are passed in as parameters. The packet is
 * complete with ethernet headers.
 */
-#define BROADCAST = "FF:FF:FF:FF:FF:FF";
-#define LOWER_BROADCAST = "ff:ff:ff:ff:ff:ff";
-#define TCP_PROTOCOL = 0x06  // TCP protocal number
-#define UDP_PROTOCOL = 0x11  // UDP protocal number
-#define PORT_SIZE = 16;
+std::string BROADCAST = "FF:FF:FF:FF:FF:FF";
+std::string LOWER_BROADCAST = "ff:ff:ff:ff:ff:ff";
+int PORT_SIZE = 16;
 static const uint8_t BroadcastEtherAddr[ETHER_ADDR_LEN] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};  // REMOVE
 
 void
@@ -186,7 +184,7 @@ SimpleRouter::processPacket(const Buffer& packet, const std::string& inIface)
     *destination_port = 0;
 
     // If the packet is a TCP or UDP packet, the srcPort number and dstPort number should be extracted from the TCP/UDP header which is right behind the IP header.
-    if (ip_header->ip_p == TCP_PROTOCOL || ip_header->ip_p == UDP_PROTOCOL) {
+    if (ip_header->ip_p == 0x06 || ip_header->ip_p == 0x11) {  // 0x06 = TCP, 0x11 = UDP
       memcpy(source_port, ip_header + sizeof(ip_hdr), PORT_SIZE);
       memcpy(destination_port, ip_header + sizeof(ip_hdr) + PORT_SIZE, PORT_SIZE);
     } 
