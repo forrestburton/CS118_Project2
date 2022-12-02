@@ -53,7 +53,7 @@ ArpCache::periodicCheckArpRequestsAndCacheEntries()
       // remove any packets that are queued for the transmission
       std::list<PendingPacket>::const_iterator packet_it = (*request_it)->packets.begin();
       while (packet_it != (*request_it)->packets.end()) {
-        packet_it = request_it->packets.erase(packet_it);
+        packet_it = (*request_it)->packets.erase(packet_it);
       }
     }
     // Send ARP request about once a second until an ARP reply comes back or request has been sent out at least 5 times
@@ -68,7 +68,7 @@ ArpCache::periodicCheckArpRequestsAndCacheEntries()
       // create ptr for arp header 
       arp_hdr *arp_hdr_request = reinterpret_cast<arp_hdr *>(packet_send_buffer.data()+ sizeof(ethernet_hdr)); 
       // Add data for arp header
-      arp_hdr_request->arp_hrd = htons(arp_hdr_ethernet);
+      arp_hdr_request->arp_hrd = htons(arp_hrd_ethernet);
       arp_hdr_request->arp_pro = htons(ethertype_ip);
       arp_hdr_request->arp_hln = ETHER_ADDR_LEN;
       arp_hdr_request->arp_pln = 4;
@@ -87,11 +87,11 @@ ArpCache::periodicCheckArpRequestsAndCacheEntries()
 
       // Send packet
       std::cerr << "Sending ARP Request to populate ARP cache" << std::endl;
-      m_router.sendPacket(packet_send_buffer, iface->name);
+      m_router.sendPacket(packet_send_buffer, interface->name);
 
       //update request information
-      (*req_iter)->timeSent = std::chrono::steady_clock::now();
-      (*req_iter)->nTimesSent++;
+      (*request_it)->timeSent = std::chrono::steady_clock::now();
+      (*request_it)->nTimesSent++;
       
       request_it++;
     }
@@ -99,10 +99,10 @@ ArpCache::periodicCheckArpRequestsAndCacheEntries()
   // If no ongoing traffic
   // Starter code already includes cfacility to mark ARP entries "invalid"
   // Loop through and remove invalid entries
-  std::list<ArpEntry>::iterator it = m_cacheEntries.begin();
+  std::list<std::shared_ptr<ArpEntry>>::iterator it = m_cacheEntries.begin();
   while (it != m_cacheEntries.end()) {
     if (!((*it)->isValid)){
-      it = m_cacheEntires.erase(it);
+      it = m_cacheEntries.erase(it);
     }
     else {
       it++;
