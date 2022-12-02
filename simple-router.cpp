@@ -177,8 +177,8 @@ SimpleRouter::processPacket(const Buffer& packet, const std::string& inIface)
     // ACL CHECK
     // Check if any ACL rules apply to packet
     ACLTableEntry entry;
-    uint16_t* source_port;
-    uint16_t* destination_port;
+    uint16_t* source_port = nullptr;
+    uint16_t* destination_port = nullptr;
     uint32_t ip_source = ip_header->ip_src;
     uint32_t ip_destination = ip_header->ip_dst;
     uint8_t ip_protocal = ip_header->ip_p;
