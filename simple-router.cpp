@@ -199,7 +199,7 @@ SimpleRouter::processPacket(const Buffer& packet, const std::string& inIface)
       // Perform action described by packet: "Deny" or "Permit"
       if (entry.action == "Deny") {
         // log if packet dropped
-        m_aclLogFile; << entry << '\n';  // FORMATTED CORRECTLY???
+        m_aclLogFile << entry << '\n';  // FORMATTED CORRECTLY???
         std::cerr << "Dropping packet: ACL rule says to deny" << std::endl;
         return;
       }
@@ -232,7 +232,7 @@ SimpleRouter::processPacket(const Buffer& packet, const std::string& inIface)
     
     //Use the longest prefix match algorithm to find a next-hop IP address in the routing table and attempt to forward it there
     std::cerr << "Checking routing table and using longest matching prefix algorithm" << std::endl;
-    uint32_t ip_destination = ip_header->ip_dst;
+    ip_destination = ip_header->ip_dst;
     RoutingTableEntry table_entry = m_routingTable.lookup(ip_destination); // Use longest-prefix to find next-hop IP address
     
     const Interface *ip_interface_next = findIfaceByName(table_entry.ifName);
