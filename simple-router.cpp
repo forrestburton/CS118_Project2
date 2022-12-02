@@ -191,8 +191,8 @@ SimpleRouter::processPacket(const Buffer& packet, const std::string& inIface)
 
     uint32_t ip_source = ip_header->ip_src;
     uint32_t ip_destination = ip_header->ip_dst;
-    unint8_t ip_protocal = ip_header->ip_p;
-    ACLTableEntry entry = m_aclTable.lookup(ip_source, ip_destination, ip_protocal, *src_port, *dst_port);
+    uint8_t ip_protocal = ip_header->ip_p;
+    ACLTableEntry entry = m_aclTable.lookup(ip_source, ip_destination, ip_protocal, *source_port, *destination_port);
     
     if (entry != NULL) {
       // Perform action described by packet: "Deny" or "Permit"
@@ -207,7 +207,7 @@ SimpleRouter::processPacket(const Buffer& packet, const std::string& inIface)
     // (1) if destined for router -> packets should be discarded
     for (auto iface = m_ifaces.begin(); iface != m_ifaces.end(); iface++) {  
       // Check if packet is destined for router and drop it if so
-      uint32_t ip_destination = ip_header->ip_dst;
+      ip_destination = ip_header->ip_dst;
       if (iface->ip == ip_destination) {
         std::cerr << "Ignoring packet: Packet destined for the router" << std::endl;
         return;
@@ -284,7 +284,7 @@ SimpleRouter::processPacket(const Buffer& packet, const std::string& inIface)
     std::cerr << "Ignoring Packer: Packet must be ARP or IPv4" << std::endl;
     return;
   }
-  m_aclLogFile.close()  // Close stream
+  m_aclLogFile.close();  // Close stream
 }
 //////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////
