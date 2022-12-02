@@ -160,6 +160,7 @@ SimpleRouter::processPacket(const Buffer& packet, const std::string& inIface)
     Buffer buf(packet);  // buffer for IPv4 packet
     ip_hdr* ip_header = (ip_hdr*) (buf.data() + sizeof(ethernet_hdr));
 
+    std::cerr << "Got Here 1" << std::endl;
     unsigned long required_p_size = packet.size();
     unsigned long p_size = sizeof(ethernet_hdr) + sizeof(ip_hdr);
     if ((required_p_size < p_size) || (ip_header->ip_len < sizeof(ip_hdr))) {
@@ -167,6 +168,7 @@ SimpleRouter::processPacket(const Buffer& packet, const std::string& inIface)
       return;
     } 
 
+    std::cerr << "Got Here 2" << std::endl;
     uint16_t old_checksum = ip_header->ip_sum; //Old checksum
     ip_header->ip_sum = 0; //reset
     if (old_checksum != cksum(ip_header, sizeof(ip_hdr))) {
@@ -174,6 +176,7 @@ SimpleRouter::processPacket(const Buffer& packet, const std::string& inIface)
       return;
     }
 
+    std::cerr << "Got Here 3" << std::endl;
     // ACL CHECK
     // Check if any ACL rules apply to packet
     ACLTableEntry entry;
@@ -183,6 +186,7 @@ SimpleRouter::processPacket(const Buffer& packet, const std::string& inIface)
     uint32_t ip_destination = ip_header->ip_dst;
     uint8_t ip_protocal = ip_header->ip_p;
     
+    std::cerr << "Got Here 4" << std::endl;
     // If the packet is a TCP or UDP packet, the srcPort number and dstPort number should be extracted from the TCP/UDP header which is right behind the IP header.
     if (ip_header->ip_p == 0x06 || ip_header->ip_p == 0x11) {  // 0x06 = TCP, 0x11 = UDP
       memcpy(source_port, ip_header + sizeof(ip_hdr), PORT_SIZE);
@@ -194,6 +198,7 @@ SimpleRouter::processPacket(const Buffer& packet, const std::string& inIface)
       entry = m_aclTable.lookup(ip_source, ip_destination, ip_protocal, 0, 0);
     }
     
+    std::cerr << "Got Here 5" << std::endl;
     // entry->action == "" means not found in ACL table
     if (entry.action == "") {
       // Perform action described by packet: "Deny" or "Permit"
@@ -205,6 +210,7 @@ SimpleRouter::processPacket(const Buffer& packet, const std::string& inIface)
       }
     }
 
+    std::cerr << "Got Here 6" << std::endl;
     // (1) if destined for router -> packets should be discarded
     for (auto iface = m_ifaces.begin(); iface != m_ifaces.end(); iface++) {  
       // Check if packet is destined for router and drop it if so
