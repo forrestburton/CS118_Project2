@@ -74,7 +74,7 @@ ACLTable::lookup(uint32_t srcIp, uint32_t dstIp, uint8_t protocol, uint16_t srcP
   }
   if (highest_priority_entry == nullptr) {
     ACLTableEntry a;
-    a->action = "";
+    a.action = "";
     return a;
     //throw std::runtime_error("ACL entry not found");
     //return NULL;
