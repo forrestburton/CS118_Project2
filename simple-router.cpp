@@ -192,7 +192,7 @@ SimpleRouter::processPacket(const Buffer& packet, const std::string& inIface)
       memcpy(destination_port, ip_header + sizeof(ip_hdr) + PORT_SIZE, PORT_SIZE);
       
       std::cerr << "Debug 2" << std::endl;
-      if (soruce_port == nullptr || destination_port == nullptr) {
+      if (source_port == nullptr || destination_port == nullptr) {
         std::cerr << "NULLPOINTERS" << std::endl;
       }
 
