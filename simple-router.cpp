@@ -107,7 +107,7 @@ SimpleRouter::processPacket(const Buffer& packet, const std::string& inIface)
       eth_hdr_reply->ether_type = htons(ethertype_arp);
       
       // Add data for arp header
-      arp_hdr_reply->arp_hrd = htons(ETHER_ADDR_LEN);
+      arp_hdr_reply->arp_hrd = htons(arp_hrd_ethernet);
       arp_hdr_reply->arp_pro = htons(ethertype_ip);
       arp_hdr_reply->arp_hln = ETHER_ADDR_LEN;
       arp_hdr_reply->arp_pln = 4;
@@ -209,20 +209,20 @@ SimpleRouter::processPacket(const Buffer& packet, const std::string& inIface)
 
     //  Entry not in ARP cache, do ARP request
     if (lookup_ptr == NULL) {
-      m_arp.queueArpRequest(table_entry.gw, packet, interface_name);  // Adds an ARP request to the ARP request queue
+      m_arp.queueArpRequest(table_entry.gw, packet, interface_name);  // Adds an ARP request to the ARP request queue  CHECK PACKET 
       
       // buffer for ARP request
       Buffer arp_buffer(sizeof(ethernet_hdr) + sizeof(arp_hdr));  
       
       // Ethernet header info
-      ethernet_hdr* request_header_eth = (ethernet_hdr*) (arp_buffer.data());
+      ethernet_hdr* request_header_eth = (ethernet_hdr*) (arp_buffer.data());  // ARP_BUFFER OR PACKET
       request_header_eth->ether_type = htons(ethertype_arp);
       memcpy(request_header_eth->ether_dhost, BroadcastEtherAddr, ETHER_ADDR_LEN);  // !!!!!!!!!!!!!!!!!
       memcpy(request_header_eth->ether_shost, ip_interface_next->addr.data(), ETHER_ADDR_LEN);
       
 
       // ARP header info 
-      arp_hdr* request_header_arp = (arp_hdr*) (buf.data() + sizeof(ethernet_hdr));
+      arp_hdr* request_header_arp = (arp_hdr*) (buf.data() + sizeof(ethernet_hdr));  // PACKET OR BUG!!!!!!!
       request_header_arp->arp_pro = htons(ethertype_ip);
       request_header_arp->arp_hrd = htons(arp_hrd_ethernet);
       request_header_arp->arp_op = htons(arp_op_request);

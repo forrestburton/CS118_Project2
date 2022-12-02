@@ -22,17 +22,92 @@
 #include <algorithm>
 #include <iostream>
 
+static const uint8_t BroadcastEtherAddr[ETHER_ADDR_LEN] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};  // REMOVE
+
 namespace simple_router {
 
 //////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////
 // IMPLEMENT THIS METHOD
+/**
+ * This method gets called every second. For each request sent out,
+ * you should keep checking whether to resend a request or remove it.
+ */
 void
 ArpCache::periodicCheckArpRequestsAndCacheEntries()
 {
-
   // FILL THIS IN
 
+  // If ongoing traffic (client still pinging server)
+  // Send ARP request about once a second until an ARP reply comes back or request has been sent out at least 5 times
+  // If router didn't receive ARP reply after re-transmitting ARP request 5 times, it should stop re-transmitting, remove pending request
+    // and also remove any packets that are queued for the transmission 
+  std::list<std::shared_ptr<ArpRequest>>::iterator request_it = m_arpRequests.begin();
+  while (request_it != m_arpRequests.end()) {
+    // Determine how many re-transmissions of ARP requests have occured
+    const uint32_t sent_time = (*request_it)->nTimesSent;
+    if (sent_time >= MAX_SENT_TIME) {  // stop retransmitting after 5 times and remove pending request
+      // remove pending request
+      request_it = m_arpRequest.erase(request_it);  
+
+      // remove any packets that are queued for the transmission
+      std::list<PendingPacket>::const_iterator packet_it = (*request_it)->packets.begin();
+      while (packet_it != (*request_it)->packets.end()) {
+        packet_it = request_it->packets.erase(packet_it);
+      }
+    }
+    // Send ARP request about once a second until an ARP reply comes back or request has been sent out at least 5 times
+    else {
+      // get interface
+      std::string iname = (*request_it)->packets.front().iface;
+      const Interface* interface = m_router.findIfaceByName(iname);
+      
+      // Buffer for ARP request
+      Buffer packet_send_buffer(sizeof(ethernet_hdr) + sizeof(arp_hdr));
+          
+      // create ptr for arp header 
+      arp_hdr *arp_hdr_request = reinterpret_cast<arp_hdr *>(packet_send_buffer.data()+ sizeof(ethernet_hdr)); 
+      // Add data for arp header
+      arp_hdr_request->arp_hrd = htons(arp_hdr_ethernet);
+      arp_hdr_request->arp_pro = htons(ethertype_ip);
+      arp_hdr_request->arp_hln = ETHER_ADDR_LEN;
+      arp_hdr_request->arp_pln = 4;
+      arp_hdr_request->arp_op = htons(arp_op_request);  // Opcode of the reply
+      arp_hdr_request->arp_sip = interface->ip;
+      memcpy(arp_hdr_request->arp_tha, BroadcastEtherAddr, ETHER_ADDR_LEN);  //CHANGE
+      arp_hdr_request->arp_tip = (*request_it)->ip;  
+      memcpy(arp_hdr_request->arp_sha, interface->addr.data(), ETHER_ADDR_LEN);
+
+      // create ptr for ethernet header 
+      ethernet_hdr *eth_hdr_request = reinterpret_cast<ethernet_hdr *>(packet_send_buffer.data()); 
+      // Add data for ethernet header
+      memcpy(eth_hdr_request->ether_shost, interface->addr.data(), ETHER_ADDR_LEN);
+      memcpy(eth_hdr_request->ether_dhost, BroadcastEtherAddr, ETHER_ADDR_LEN);  // CHANGE
+      eth_hdr_request->ether_type = htons(ethertype_arp);
+
+      // Send packet
+      std::cerr << "Sending ARP Request to populate ARP cache" << std::endl;
+      m_router.sendPacket(packet_send_buffer, iface->name);
+
+      //update request information
+      (*req_iter)->timeSent = std::chrono::steady_clock::now();
+      (*req_iter)->nTimesSent++;
+      
+      request_it++;
+    }
+  }
+  // If no ongoing traffic
+  // Starter code already includes cfacility to mark ARP entries "invalid"
+  // Loop through and remove invalid entries
+  std::list<ArpEntry>::iterator it = m_cacheEntries.begin();
+  while (it != m_cacheEntries.end()) {
+    if (!((*it)->isValid)){
+      it = m_cacheEntires.erase(it);
+    }
+    else {
+      it++;
+    }
+  }
 }
 //////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////
