@@ -73,7 +73,7 @@ ACLTable::lookup(uint32_t srcIp, uint32_t dstIp, uint8_t protocol, uint16_t srcP
     entry++;
   }
   if (highest_priority_entry == nullptr) {
-    return nullptr;
+    return NULL;
   }
   return *highest_priority_entry;
 }

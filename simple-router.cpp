@@ -196,7 +196,7 @@ SimpleRouter::processPacket(const Buffer& packet, const std::string& inIface)
     unint8_t ip_protocal = ip_header->ip_p;
     ACLTableEntry entry = m_aclTable.lookup(ip_source, ip_destination, ip_protocal, *src_port, *dst_port);
     
-    if (entry != nullptr) {
+    if (entry != NULL) {
       // Perform action described by packet: "Deny" or "Permit"
       if (entry.action == "Deny") {
         // log if packet dropped
