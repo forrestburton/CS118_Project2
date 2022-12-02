@@ -32,8 +32,11 @@ namespace simple_router {
 * interface \p inIface are passed in as parameters. The packet is
 * complete with ethernet headers.
 */
-std::string BROADCAST = "FF:FF:FF:FF:FF:FF";
-std::string LOWER_BROADCAST = "ff:ff:ff:ff:ff:ff";
+#define BROADCAST = "FF:FF:FF:FF:FF:FF";
+#define LOWER_BROADCAST = "ff:ff:ff:ff:ff:ff";
+#define TCP_PROTOCOL = 0x06  // TCP protocal number
+#define UDP_PROTOCOL = 0x11  // UDP protocal number
+#define PORT_SIZE = 16;
 static const uint8_t BroadcastEtherAddr[ETHER_ADDR_LEN] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};  // REMOVE
 
 void
@@ -173,6 +176,36 @@ SimpleRouter::processPacket(const Buffer& packet, const std::string& inIface)
       return;
     }
 
+    // ACL CHECK
+    // Check if any ACL rules apply to packet
+    uint16_t* source_port;
+    uint16_t* destination_port;
+    
+    // If the packet is an ICMP packet, both port numbers will be zero.
+    *source_port = 0;
+    *destination_port = 0;
+
+    // If the packet is a TCP or UDP packet, the srcPort number and dstPort number should be extracted from the TCP/UDP header which is right behind the IP header.
+    if (ip_header->ip_p == TCP_PROTOCOL || ip_header->ip_p == UDP_PROTOCOL) {
+      memcpy(source_port, ip_header + sizeof(ip_hdr), PORT_SIZE);
+      memcpy(destination_port, ip_header + sizeof(ip_hdr) + PORT_SIZE, PORT_SIZE);
+    } 
+
+    uint32_t ip_source = ip_header->ip_src;
+    uint32_t ip_destination = ip_header->ip_dst;
+    unint8_t ip_protocal = ip_header->ip_p;
+    ACLTableEntry entry = m_aclTable.lookup(ip_source, ip_destination, ip_protocal, *src_port, *dst_port);
+    
+    if (entry != nullptr) {
+      // Perform action described by packet: "Deny" or "Permit"
+      if (entry.action == "Deny") {
+        // log if packet dropped
+        m_aclLogFile; << entry << '\n';  // FORMATTED CORRECTLY???
+        std::cerr << "Dropping packet: ACL rule says to deny" << std::endl;
+        return;
+      }
+    }
+
     // (1) if destined for router -> packets should be discarded
     for (auto iface = m_ifaces.begin(); iface != m_ifaces.end(); iface++) {  
       // Check if packet is destined for router and drop it if so
@@ -201,7 +234,7 @@ SimpleRouter::processPacket(const Buffer& packet, const std::string& inIface)
     //Use the longest prefix match algorithm to find a next-hop IP address in the routing table and attempt to forward it there
     std::cerr << "Checking routing table and using longest matching prefix algorithm" << std::endl;
     uint32_t ip_destination = ip_header->ip_dst;
-    RoutingTableEntry table_entry = m_routingTable.lookup(ip_destination); //Find next hop address via longest-prefix
+    RoutingTableEntry table_entry = m_routingTable.lookup(ip_destination); // Use longest-prefix to find next-hop IP address
     
     const Interface *ip_interface_next = findIfaceByName(table_entry.ifName);
     std::shared_ptr<ArpEntry> lookup_ptr = m_arp.lookup(table_entry.gw); // Lookup entry in ARP cache
@@ -209,20 +242,20 @@ SimpleRouter::processPacket(const Buffer& packet, const std::string& inIface)
 
     //  Entry not in ARP cache, do ARP request
     if (lookup_ptr == NULL) {
-      m_arp.queueArpRequest(table_entry.gw, packet, interface_name);  // Adds an ARP request to the ARP request queue  CHECK PACKET 
+      m_arp.queueArpRequest(table_entry.gw, packet, interface_name);  // Adds an ARP request to the ARP request queue  CHECK PACKET ???????
       
       // buffer for ARP request
       Buffer arp_buffer(sizeof(ethernet_hdr) + sizeof(arp_hdr));  
       
       // Ethernet header info
-      ethernet_hdr* request_header_eth = (ethernet_hdr*) (arp_buffer.data());  // ARP_BUFFER OR PACKET
+      ethernet_hdr* request_header_eth = (ethernet_hdr*) (arp_buffer.data());  // ARP_BUFFER OR PACKET???????
       request_header_eth->ether_type = htons(ethertype_arp);
-      memcpy(request_header_eth->ether_dhost, BroadcastEtherAddr, ETHER_ADDR_LEN);  // !!!!!!!!!!!!!!!!!
+      memcpy(request_header_eth->ether_dhost, BroadcastEtherAddr, ETHER_ADDR_LEN);  // ???????
       memcpy(request_header_eth->ether_shost, ip_interface_next->addr.data(), ETHER_ADDR_LEN);
       
 
       // ARP header info 
-      arp_hdr* request_header_arp = (arp_hdr*) (buf.data() + sizeof(ethernet_hdr));  // PACKET OR BUG!!!!!!!
+      arp_hdr* request_header_arp = (arp_hdr*) (buf.data() + sizeof(ethernet_hdr));  // PACKET OR???????
       request_header_arp->arp_pro = htons(ethertype_ip);
       request_header_arp->arp_hrd = htons(arp_hrd_ethernet);
       request_header_arp->arp_op = htons(arp_op_request);
@@ -230,7 +263,7 @@ SimpleRouter::processPacket(const Buffer& packet, const std::string& inIface)
       request_header_arp->arp_tip = table_entry.gw;
       request_header_arp->arp_hln = ETHER_ADDR_LEN;
       request_header_arp->arp_pln = 4;
-      memcpy(request_header_arp->arp_tha, BroadcastEtherAddr, ETHER_ADDR_LEN);   // !!!!!!!!!!!!!!!!!
+      memcpy(request_header_arp->arp_tha, BroadcastEtherAddr, ETHER_ADDR_LEN);   // ???????
       memcpy(request_header_arp->arp_sha, ip_interface_next->addr.data(), ETHER_ADDR_LEN);
 
       std::cerr << "Forwarding IPv4 Packet" << std::endl;
@@ -253,6 +286,7 @@ SimpleRouter::processPacket(const Buffer& packet, const std::string& inIface)
     std::cerr << "Ignoring Packer: Packet must be ARP or IPv4" << std::endl;
     return;
   }
+  m_aclLogFile.close()  // Close stream
 }
 //////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////

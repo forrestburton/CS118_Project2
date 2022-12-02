@@ -54,7 +54,7 @@ ArpCache::periodicCheckArpRequestsAndCacheEntries()
       std::list<PendingPacket>::const_iterator packet_it = (*request_it)->packets.begin();
       while (packet_it != (*request_it)->packets.end()) {
         packet_it = (*request_it)->packets.erase(packet_it);
-      }
+        
     }
     // Send ARP request about once a second until an ARP reply comes back or request has been sent out at least 5 times
     else {

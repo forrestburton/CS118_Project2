@@ -55,17 +55,34 @@ namespace simple_router {
 //////////////////////////////////////////////////////////////////////////
 // IMPLEMENT THESE METHODS
 ACLTableEntry
-ACLTable::lookup(uint32_t srcIp, uint32_t dstIp, uint8_t protocol, uint32_t srcPort, uint16_t dstPort) const
+ACLTable::lookup(uint32_t srcIp, uint32_t dstIp, uint8_t protocol, uint16_t srcPort, uint16_t dstPort) const
 {
   // FILL THIS IN
+  int prior = -1;
 
-  throw std::runtime_error("ACL entry not found");
+  // For each incoming packet, check if any of the rules in the ACL apply to the packet 
+  std::list<ACLTableEntry>::iterator entry = m_entries.begin();
+  ACLTableEntry* highest_priority_entry = nullptr;
+  while (entry != m_entries.end()) {
+    if (scrIp == entry->src && dstIp == entr->dest && protocol == entry->protocol && srcPort == entry->srcPort && dstPort == entry->dstPort) {
+      if (prior <= int(entry->priority)) {
+        prior = int(entry->priority);
+        highest_priority_entry = (ACLTableEntry*) &*entry;
+      }
+    }
+    entry++;
+  }
+  if (highest_priority_entry == nullptr) {
+    return nullptr;
+  }
+  return *highest_priority_entry;
 }
 
 void
 ACLTable::addRule(ACLTableEntry& entry)
 {
   // FILL THIS IN
+  m_entries.push_back(entry)
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -100,11 +117,11 @@ ACLTable::load(const std::string& fileName)
 
           temp = splitStr(fields[2], "&");
           uint16_t destPort = std::strtoul(temp[0].c_str(), NULL, 16);
-          uint16_t destPortMask = std::strtoul(temp[0].c_str(), NULL, 16);
+          uint16_t destPortMask = std::strtoul(temp[1].c_str(), NULL, 16);
 
           temp = splitStr(fields[3], "&");
           uint16_t srcPort = std::strtoul(temp[0].c_str(), NULL, 16);
-          uint16_t srcPortMask = std::strtoul(temp[0].c_str(), NULL, 16);
+          uint16_t srcPortMask = std::strtoul(temp[1].c_str(), NULL, 16);
 
           temp = splitStr(fields[4], "&");
           uint8_t protocol = std::strtoul(temp[0].c_str(), NULL, 16);
