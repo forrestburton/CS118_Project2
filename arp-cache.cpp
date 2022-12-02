@@ -48,7 +48,7 @@ ArpCache::periodicCheckArpRequestsAndCacheEntries()
     const uint32_t sent_time = (*request_it)->nTimesSent;
     if (sent_time >= MAX_SENT_TIME) {  // stop retransmitting after 5 times and remove pending request
       // remove pending request
-      request_it = m_arpRequest.erase(request_it);  
+      request_it = m_arpRequests.erase(request_it);  
 
       // remove any packets that are queued for the transmission
       std::list<PendingPacket>::const_iterator packet_it = (*request_it)->packets.begin();
