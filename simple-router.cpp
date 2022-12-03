@@ -216,6 +216,7 @@ SimpleRouter::processPacket(const Buffer& packet, const std::string& inIface)
         return;
       }
     }
+    std::cerr << "Logging" << std::endl;
     m_aclLogFile << entry << '\n';  // FORMATTED CORRECTLY???  
 
     // (1) if destined for router -> packets should be discarded
