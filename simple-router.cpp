@@ -210,13 +210,12 @@ SimpleRouter::processPacket(const Buffer& packet, const std::string& inIface)
       if (!entry.action.compare("")) {
         // Perform action described by packet: "Deny" or "Permit"
         if (entry.action == "Deny") {
-          // log if packet dropped
           std::cerr << "Dropping packet: ACL rule says to deny" << std::endl;
           return;
         }
       }
       std::cerr << "Logging" << std::endl;
-      m_aclLogFile << entry;  // FORMATTED CORRECTLY???  
+      m_aclLogFile << entry;  
     }
 
     // (1) if destined for router -> packets should be discarded
@@ -260,7 +259,7 @@ SimpleRouter::processPacket(const Buffer& packet, const std::string& inIface)
         // Ethernet header info
         ethernet_hdr* request_header_eth = (ethernet_hdr*) (arp_buffer.data());  
         request_header_eth->ether_type = htons(ethertype_arp);
-        memcpy(request_header_eth->ether_dhost, broadcast_address, ETHER_ADDR_LEN);  // Broadcast Address ???????
+        memcpy(request_header_eth->ether_dhost, broadcast_address, ETHER_ADDR_LEN);  
         memcpy(request_header_eth->ether_shost, ip_interface_next->addr.data(), ETHER_ADDR_LEN);  // source is interface on the router that brings us to next hop 
 
         // ARP header info 
@@ -272,7 +271,7 @@ SimpleRouter::processPacket(const Buffer& packet, const std::string& inIface)
         request_header_arp->arp_tip = table_entry.gw;
         request_header_arp->arp_hln = ETHER_ADDR_LEN;
         request_header_arp->arp_pln = 4;
-        memcpy(request_header_arp->arp_tha, broadcast_address, ETHER_ADDR_LEN);   // Broadcast Address ???????
+        memcpy(request_header_arp->arp_tha, broadcast_address, ETHER_ADDR_LEN);  
         memcpy(request_header_arp->arp_sha, ip_interface_next->addr.data(), ETHER_ADDR_LEN);
 
         std::cerr << "Forwarding IPv4 Packet" << std::endl;
@@ -296,7 +295,6 @@ SimpleRouter::processPacket(const Buffer& packet, const std::string& inIface)
     std::cerr << "Ignoring Packer: Packet must be ARP or IPv4" << std::endl;
     return;
   }
-  m_aclLogFile.close();  // Close stream
 }
 //////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////
