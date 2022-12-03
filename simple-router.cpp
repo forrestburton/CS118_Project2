@@ -204,7 +204,7 @@ SimpleRouter::processPacket(const Buffer& packet, const std::string& inIface)
       }      
     }
     
-    entry = m_aclTable.lookup(ip_source, ip_destination, ip_protocal, source_port, destination_port);
+    entry = m_aclTable.lookup(ntohs(ip_source), ntohs(ip_destination), ntohs(ip_protocal), ntohs(source_port), ntohs(destination_port));
     std::cerr << "After" << std::endl;
     
     
@@ -217,7 +217,7 @@ SimpleRouter::processPacket(const Buffer& packet, const std::string& inIface)
         return;
       }
     }
-    m_aclLogFile << entry << '\n';  // FORMATTED CORRECTLY???  LOG FOR BOTH????
+    m_aclLogFile << entry << '\n';  // FORMATTED CORRECTLY???  
 
     // (1) if destined for router -> packets should be discarded
     const Interface* interface = findIfaceByIp(ip_header->ip_dst);
@@ -252,7 +252,7 @@ SimpleRouter::processPacket(const Buffer& packet, const std::string& inIface)
 
       //  Entry not in ARP cache, do ARP request
       if (lookup_ptr == NULL) {  // table_entry is next hop 
-        m_arp.queueArpRequest(table_entry.gw, packet, interface_name);  // Adds an ARP request to the ARP request queue  CHECK PACKET ???????
+        m_arp.queueArpRequest(table_entry.gw, packet, interface_name);  
         
         // buffer for ARP request
         Buffer arp_buffer(sizeof(ethernet_hdr) + sizeof(arp_hdr));  
