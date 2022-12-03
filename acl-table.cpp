@@ -64,7 +64,7 @@ ACLTable::lookup(uint32_t srcIp, uint32_t dstIp, uint8_t protocol, uint16_t srcP
   std::list<ACLTableEntry>::const_iterator entry = m_entries.begin();
   ACLTableEntry* highest_priority_entry = nullptr;
   while (entry != m_entries.end()) {
-    if ((srcIp & entry->srcMask) == (entry->src & entry->srcMask) && (dstIp & entry->destMask) == (entry->dest & entry->destMask) && (protocol & entry->protocokMask) == (entry->protocol & entry->protocolMask) && (srcPort & entry->srcPortMask) == (entry->srcPort & entry->srcPortMask) && (dstPort & entry->destPortMask) == (entry->destPort & entry->destPortMask)) {
+    if ((srcIp & entry->srcMask) == (entry->src & entry->srcMask) && (dstIp & entry->destMask) == (entry->dest & entry->destMask) && (protocol & entry->protocolMask) == (entry->protocol & entry->protocolMask) && (srcPort & entry->srcPortMask) == (entry->srcPort & entry->srcPortMask) && (dstPort & entry->destPortMask) == (entry->destPort & entry->destPortMask)) {
       if (prior <= int(entry->priority)) {
         prior = int(entry->priority);
         highest_priority_entry = (ACLTableEntry*) &*entry;
