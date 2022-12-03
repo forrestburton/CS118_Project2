@@ -202,22 +202,21 @@ SimpleRouter::processPacket(const Buffer& packet, const std::string& inIface)
       // if (source_port == 0 || destination_port == 0) {
       //   std::cerr << "SHOULDN'T BE 0" << std::endl;
       // }      
-    }
-
-    entry = m_aclTable.lookup(ntohl(ip_source), ntohl(ip_destination), ntohs(ip_protocal), ntohs(source_port), ntohs(destination_port));
-    std::cerr << "After" << std::endl;
-    
-    //entry->action == "" means not found in ACL table
-    if (entry.action != "") {
-      // Perform action described by packet: "Deny" or "Permit"
-      if (entry.action == "Deny") {
-        // log if packet dropped
-        std::cerr << "Dropping packet: ACL rule says to deny" << std::endl;
-        return;
+      entry = m_aclTable.lookup(ntohl(ip_source), ntohl(ip_destination), ntohs(ip_protocal), ntohs(source_port), ntohs(destination_port));
+      //std::cerr << "After" << std::endl;
+      
+      //entry->action == "" means not found in ACL table
+      if (entry.action != "") {
+        // Perform action described by packet: "Deny" or "Permit"
+        if (entry.action == "Deny") {
+          // log if packet dropped
+          std::cerr << "Dropping packet: ACL rule says to deny" << std::endl;
+          return;
+        }
       }
+      std::cerr << "Logging" << std::endl;
+      m_aclLogFile << entry;  // FORMATTED CORRECTLY???  
     }
-    std::cerr << "Logging" << std::endl;
-    m_aclLogFile << entry << '\n';  // FORMATTED CORRECTLY???  
 
     // (1) if destined for router -> packets should be discarded
     const Interface* interface = findIfaceByIp(ip_header->ip_dst);
