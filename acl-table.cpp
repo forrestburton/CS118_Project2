@@ -67,7 +67,7 @@ ACLTable::lookup(uint32_t srcIp, uint32_t dstIp, uint8_t protocol, uint16_t srcP
     if ((srcIp & entry->srcMask) == (entry->src & entry->srcMask) && (dstIp & entry->destMask) == (entry->dest & entry->destMask) && (protocol & entry->protocolMask) == (entry->protocol & entry->protocolMask) && (srcPort & entry->srcPortMask) == (entry->srcPort & entry->srcPortMask) && (dstPort & entry->destPortMask) == (entry->destPort & entry->destPortMask)) {
       if (prior <= int(entry->priority)) {
         prior = int(entry->priority);
-        highest_priority_entry = (ACLTableEntry*) &*entry;
+        highest_priority_entry = (ACLTableEntry*) &(*entry);
       }
     }
     entry++;
