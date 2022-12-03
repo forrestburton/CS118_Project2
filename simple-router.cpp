@@ -35,7 +35,7 @@ namespace simple_router {
 std::string BROADCAST = "FF:FF:FF:FF:FF:FF";
 std::string LOWER_BROADCAST = "ff:ff:ff:ff:ff:ff";
 int PORT_SIZE = 2;
-static const uint8_t BroadcastEtherAddr[ETHER_ADDR_LEN] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};  // REMOVE
+static const uint8_t broadcast_address[ETHER_ADDR_LEN] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};  // REMOVE
 
 void
 SimpleRouter::processPacket(const Buffer& packet, const std::string& inIface)   
@@ -260,7 +260,7 @@ SimpleRouter::processPacket(const Buffer& packet, const std::string& inIface)
         // Ethernet header info
         ethernet_hdr* request_header_eth = (ethernet_hdr*) (arp_buffer.data());  
         request_header_eth->ether_type = htons(ethertype_arp);
-        memcpy(request_header_eth->ether_dhost, BroadcastEtherAddr, ETHER_ADDR_LEN);  // Broadcast Address ???????
+        memcpy(request_header_eth->ether_dhost, broadcast_address, ETHER_ADDR_LEN);  // Broadcast Address ???????
         memcpy(request_header_eth->ether_shost, ip_interface_next->addr.data(), ETHER_ADDR_LEN);  // source is interface on the router that brings us to next hop 
 
         // ARP header info 
@@ -272,7 +272,7 @@ SimpleRouter::processPacket(const Buffer& packet, const std::string& inIface)
         request_header_arp->arp_tip = table_entry.gw;
         request_header_arp->arp_hln = ETHER_ADDR_LEN;
         request_header_arp->arp_pln = 4;
-        memcpy(request_header_arp->arp_tha, BroadcastEtherAddr, ETHER_ADDR_LEN);   // Broadcast Address ???????
+        memcpy(request_header_arp->arp_tha, broadcast_address, ETHER_ADDR_LEN);   // Broadcast Address ???????
         memcpy(request_header_arp->arp_sha, ip_interface_next->addr.data(), ETHER_ADDR_LEN);
 
         std::cerr << "Forwarding IPv4 Packet" << std::endl;

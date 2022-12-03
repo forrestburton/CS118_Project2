@@ -22,7 +22,7 @@
 #include <algorithm>
 #include <iostream>
 
-static const uint8_t BroadcastEtherAddr[ETHER_ADDR_LEN] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};  // REMOVE
+static const uint8_t broadcast_address[ETHER_ADDR_LEN] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};  // REMOVE
 
 namespace simple_router {
 
@@ -77,7 +77,7 @@ ArpCache::periodicCheckArpRequestsAndCacheEntries()
       arp_hdr_request->arp_pln = 4;
       arp_hdr_request->arp_op = htons(arp_op_request);  // Opcode of the reply
       arp_hdr_request->arp_sip = interface->ip;
-      memcpy(arp_hdr_request->arp_tha, BroadcastEtherAddr, ETHER_ADDR_LEN);  //CHANGE
+      memcpy(arp_hdr_request->arp_tha, broadcast_address, ETHER_ADDR_LEN);  //CHANGE
       arp_hdr_request->arp_tip = (*request_it)->ip;  
       memcpy(arp_hdr_request->arp_sha, interface->addr.data(), ETHER_ADDR_LEN);
 
@@ -85,7 +85,7 @@ ArpCache::periodicCheckArpRequestsAndCacheEntries()
       ethernet_hdr *eth_hdr_request = reinterpret_cast<ethernet_hdr *>(packet_send_buffer.data()); 
       // Add data for ethernet header
       memcpy(eth_hdr_request->ether_shost, interface->addr.data(), ETHER_ADDR_LEN);
-      memcpy(eth_hdr_request->ether_dhost, BroadcastEtherAddr, ETHER_ADDR_LEN);  // CHANGE
+      memcpy(eth_hdr_request->ether_dhost, broadcast_address, ETHER_ADDR_LEN);  // CHANGE
       eth_hdr_request->ether_type = htons(ethertype_arp);
 
       // Send packet
