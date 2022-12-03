@@ -208,7 +208,7 @@ SimpleRouter::processPacket(const Buffer& packet, const std::string& inIface)
     std::cerr << "After" << std::endl;
     
     
-    entry->action == "" means not found in ACL table
+    // entry->action == "" means not found in ACL table
     if (entry.action == "") {
       // Perform action described by packet: "Deny" or "Permit"
       if (entry.action == "Deny") {
