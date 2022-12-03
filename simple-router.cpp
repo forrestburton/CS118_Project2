@@ -35,7 +35,7 @@ namespace simple_router {
 std::string BROADCAST = "FF:FF:FF:FF:FF:FF";
 std::string LOWER_BROADCAST = "ff:ff:ff:ff:ff:ff";
 int PORT_SIZE = 2;
-static const uint8_t broadcast_address[ETHER_ADDR_LEN] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};  // REMOVE
+uint8_t broadcast_address[ETHER_ADDR_LEN] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};  
 
 void
 SimpleRouter::processPacket(const Buffer& packet, const std::string& inIface)   
@@ -83,7 +83,7 @@ SimpleRouter::processPacket(const Buffer& packet, const std::string& inIface)
     // Determine if request or reply
     uint16_t arp_opcode = ntohs(arp_op);
 
-    // If request (uses unicast for source and broadcast for destination)
+    // Request (uses unicast for source and broadcast for destination). Here we reply to request 
     if (arp_opcode == arp_op_request) {
       std::cerr << "This is an ARP Request" << std::endl;
       uint32_t arp_tip = hdr->arp_tip;  // target IP address of ARP request 
@@ -154,7 +154,7 @@ SimpleRouter::processPacket(const Buffer& packet, const std::string& inIface)
             sendPacket(i->packet, i->iface);
           }
         }
-        // remove
+        // remove request
         m_arp.removeArpRequest(req);
       }
     }
