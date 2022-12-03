@@ -213,9 +213,9 @@ SimpleRouter::processPacket(const Buffer& packet, const std::string& inIface)
           std::cerr << "Dropping packet: ACL rule says to deny" << std::endl;
           return;
         }
-      }
-      std::cerr << "Logging" << std::endl;
-      m_aclLogFile << entry;  
+        std::cerr << "Logging" << std::endl;
+        m_aclLogFile << entry; 
+      } 
     }
 
     // (1) if destined for router -> packets should be discarded
