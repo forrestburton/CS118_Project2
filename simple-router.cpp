@@ -183,12 +183,12 @@ SimpleRouter::processPacket(const Buffer& packet, const std::string& inIface)
 
     // ACL CHECK
     // Check if any ACL rules apply to packet
-    // ACLTableEntry entry;
-    // uint16_t source_port = 0;
-    // uint16_t destination_port = 0;
-    // uint32_t ip_source = ip_header->ip_src;
+    ACLTableEntry entry;
+    uint16_t source_port = 0;
+    uint16_t destination_port = 0;
+    uint32_t ip_source = ip_header->ip_src;
     uint32_t ip_destination = ip_header->ip_dst;
-    // uint8_t ip_protocal = ip_header->ip_p;
+    uint8_t ip_protocal = ip_header->ip_p;
     
     std::cerr << "Before" << std::endl;
     // If the packet is a TCP or UDP packet, the srcPort number and dstPort number should be extracted from the TCP/UDP header which is right behind the IP header.
