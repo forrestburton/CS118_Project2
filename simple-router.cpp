@@ -183,41 +183,41 @@ SimpleRouter::processPacket(const Buffer& packet, const std::string& inIface)
 
     // ACL CHECK
     // Check if any ACL rules apply to packet
-    // ACLTableEntry entry;
-    // uint16_t source_port = 0;
-    // uint16_t destination_port = 0;
-    // uint32_t ip_source = ip_header->ip_src;
-    // uint32_t ip_destination = ip_header->ip_dst;
-    // uint8_t ip_protocal = ip_header->ip_p;
+    ACLTableEntry entry;
+    uint16_t source_port = 0;
+    uint16_t destination_port = 0;
+    uint32_t ip_source = ip_header->ip_src;
+    uint32_t ip_destination = ip_header->ip_dst;
+    uint8_t ip_protocal = ip_header->ip_p;
     
-    // std::cerr << "Before" << std::endl;
-    // // If the packet is a TCP or UDP packet, the srcPort number and dstPort number should be extracted from the TCP/UDP header which is right behind the IP header.
-    // if (ip_header->ip_p == 0x06 || ip_header->ip_p == 0x11) {  // 0x06 = TCP, 0x11 = UDP
-    //   std::cerr << "Debug 1" << std::endl;
+    std::cerr << "Before" << std::endl;
+    // If the packet is a TCP or UDP packet, the srcPort number and dstPort number should be extracted from the TCP/UDP header which is right behind the IP header.
+    if (ip_header->ip_p == 0x06 || ip_header->ip_p == 0x11) {  // 0x06 = TCP, 0x11 = UDP
+      std::cerr << "Debug 1" << std::endl;
 
-    //   memcpy(&source_port, ip_header + sizeof(ip_hdr), PORT_SIZE);
-    //   memcpy(&destination_port, ip_header + sizeof(ip_hdr) + PORT_SIZE, PORT_SIZE);
+      memcpy(&source_port, ip_header + sizeof(ip_hdr), PORT_SIZE);
+      memcpy(&destination_port, ip_header + sizeof(ip_hdr) + PORT_SIZE, PORT_SIZE);
       
-    //   std::cerr << "Debug 2" << std::endl;
-    //   if (source_port == 0 || destination_port == 0) {
-    //     std::cerr << "SHOULDN'T BE 0" << std::endl;
-    //   }      
-    // }
+      std::cerr << "Debug 2" << std::endl;
+      if (source_port == 0 || destination_port == 0) {
+        std::cerr << "SHOULDN'T BE 0" << std::endl;
+      }      
+    }
     
-    // entry = m_aclTable.lookup(ip_source, ip_destination, ip_protocal, source_port, destination_port);
-    //std::cerr << "After" << std::endl;
+    entry = m_aclTable.lookup(ip_source, ip_destination, ip_protocal, source_port, destination_port);
+    std::cerr << "After" << std::endl;
     
     
-    // entry->action == "" means not found in ACL table
-    // if (entry.action == "") {
-    //   // Perform action described by packet: "Deny" or "Permit"
-    //   if (entry.action == "Deny") {
-    //     // log if packet dropped
-    //     std::cerr << "Dropping packet: ACL rule says to deny" << std::endl;
-    //     return;
-    //   }
-    // }
-    // m_aclLogFile << entry << '\n';  // FORMATTED CORRECTLY???  LOG FOR BOTH????
+    entry->action == "" means not found in ACL table
+    if (entry.action == "") {
+      // Perform action described by packet: "Deny" or "Permit"
+      if (entry.action == "Deny") {
+        // log if packet dropped
+        std::cerr << "Dropping packet: ACL rule says to deny" << std::endl;
+        return;
+      }
+    }
+    m_aclLogFile << entry << '\n';  // FORMATTED CORRECTLY???  LOG FOR BOTH????
 
     // (1) if destined for router -> packets should be discarded
     const Interface* interface = findIfaceByIp(ip_header->ip_dst);
@@ -243,7 +243,7 @@ SimpleRouter::processPacket(const Buffer& packet, const std::string& inIface)
       
       //Use the longest prefix match algorithm to find a next-hop IP address in the routing table and attempt to forward it there
       std::cerr << "Checking routing table and using longest matching prefix algorithm" << std::endl;
-      uint32_t ip_destination = ip_header->ip_dst;  // destination of packet we're sending 
+      ip_destination = ip_header->ip_dst;  // destination of packet we're sending 
       RoutingTableEntry table_entry = m_routingTable.lookup(ip_destination); // Use longest-prefix to find next-hop IP address
       
       const Interface *ip_interface_next = findIfaceByName(table_entry.ifName); // Interface name of the router to get to the next hop 

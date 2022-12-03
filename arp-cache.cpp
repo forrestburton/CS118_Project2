@@ -47,14 +47,14 @@ ArpCache::periodicCheckArpRequestsAndCacheEntries()
     // Determine how many re-transmissions of ARP requests have occured
     const uint32_t sent_time = (*request_it)->nTimesSent;
     if (sent_time >= MAX_SENT_TIME) {  // stop retransmitting after 5 times and remove pending request
-      // remove pending request
-      request_it = m_arpRequests.erase(request_it);  
-
       // remove any packets that are queued for the transmission
       std::list<PendingPacket>::const_iterator packet_it = (*request_it)->packets.begin();
       while (packet_it != (*request_it)->packets.end()) {
         packet_it = (*request_it)->packets.erase(packet_it);
       }
+      
+      // remove pending request
+      request_it = m_arpRequests.erase(request_it);  
     }
     // Send ARP request about once a second until an ARP reply comes back or request has been sent out at least 5 times
     else {
@@ -90,9 +90,8 @@ ArpCache::periodicCheckArpRequestsAndCacheEntries()
       m_router.sendPacket(packet_send_buffer, interface->name);
 
       //update request information
-      (*request_it)->timeSent = std::chrono::steady_clock::now();
       (*request_it)->nTimesSent++;
-      
+      (*request_it)->timeSent = std::chrono::steady_clock::now();
       request_it++;
     }
   }
