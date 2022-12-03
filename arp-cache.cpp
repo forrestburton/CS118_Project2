@@ -42,6 +42,9 @@ ArpCache::periodicCheckArpRequestsAndCacheEntries()
   // Send ARP request about once a second until an ARP reply comes back or request has been sent out at least 5 times
   // If router didn't receive ARP reply after re-transmitting ARP request 5 times, it should stop re-transmitting, remove pending request
     // and also remove any packets that are queued for the transmission 
+  
+  int length = m_cacheEntries.size();
+  std::cerr << "ARP Cache length is: " << length << std::endl;
   std::list<std::shared_ptr<ArpRequest>>::iterator request_it = m_arpRequests.begin();
   while (request_it != m_arpRequests.end()) {
     // Determine how many re-transmissions of ARP requests have occured
@@ -52,7 +55,7 @@ ArpCache::periodicCheckArpRequestsAndCacheEntries()
       while (packet_it != (*request_it)->packets.end()) {
         packet_it = (*request_it)->packets.erase(packet_it);
       }
-      
+
       // remove pending request
       request_it = m_arpRequests.erase(request_it);  
     }
