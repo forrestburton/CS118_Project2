@@ -183,9 +183,6 @@ SimpleRouter::processPacket(const Buffer& packet, const std::string& inIface)
 
     // ACL CHECK
     // Check if any ACL rules apply to packet
-    ACLTableEntry entry;
-    uint16_t source_port = 0;
-    uint16_t destination_port = 0;
     uint32_t ip_source = ip_header->ip_src;
     uint32_t ip_destination = ip_header->ip_dst;
     uint8_t ip_protocal = ip_header->ip_p;
@@ -194,6 +191,9 @@ SimpleRouter::processPacket(const Buffer& packet, const std::string& inIface)
     // If the packet is a TCP or UDP packet, the srcPort number and dstPort number should be extracted from the TCP/UDP header which is right behind the IP header.
     if (ip_header->ip_p == 0x06 || ip_header->ip_p == 0x11) {  // 0x06 = TCP, 0x11 = UDP
       //std::cerr << "Debug 1" << std::endl;
+      ACLTableEntry entry;
+      uint16_t source_port = 0;
+      uint16_t destination_port = 0;
 
       memcpy(&source_port, ip_header + sizeof(ip_hdr), PORT_SIZE);
       memcpy(&destination_port, ip_header + sizeof(ip_hdr) + PORT_SIZE, PORT_SIZE);
@@ -209,12 +209,12 @@ SimpleRouter::processPacket(const Buffer& packet, const std::string& inIface)
       
       if (!entry.action.compare("")) {
         // Perform action described by packet: "Deny" or "Permit"
+        std::cerr << "Logging" << std::endl;
+        m_aclLogFile << entry; 
         if (entry.action == "Deny") {
           std::cerr << "Dropping packet: ACL rule says to deny" << std::endl;
           return;
         }
-        std::cerr << "Logging" << std::endl;
-        m_aclLogFile << entry; 
       } 
     }
 
