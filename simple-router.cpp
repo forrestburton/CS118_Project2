@@ -211,7 +211,7 @@ SimpleRouter::processPacket(const Buffer& packet, const std::string& inIface)
         // Perform action described by packet: "Deny" or "Permit"
         std::cerr << "Logging" << std::endl;
         m_aclLogFile << entry; 
-        if (entry.action == "Deny") {
+        if (entry.action == "deny") {
           std::cerr << "Dropping packet: ACL rule says to deny" << std::endl;
           return;
         }
