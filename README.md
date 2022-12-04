@@ -29,3 +29,17 @@ This is inherited from UCLA CS118 2017 Spring Quarter Project 3 (http://web.cs.u
 Forrest Burton
 005324612
 Additional Libraries Used and Recources:
+Installing Docker:
+https://askubuntu.com/questions/1030179/package-docker-ce-has-no-installation-candidate-in-18-04
+https://docs.docker.com/desktop/vm-vdi/
+https://docs.docker.com/engine/reference/commandline/start/
+
+ARP:
+https://www.practicalnetworking.net/series/arp/traditional-arp/
+
+
+https://stackoverflow.com/questions/9158894/differences-between-c-string-and-compare
+https://stackoverflow.com/questions/1125968/how-do-i-force-git-pull-to-overwrite-local-files/32988051
+https://stackoverflow.com/questions/9158894/differences-between-c-string-and-compare
+https://www.geeksforgeeks.org/memcpy-in-cc/
+https://itsyndicate.org/blog/how-to-use-git-force-pull-properly/
